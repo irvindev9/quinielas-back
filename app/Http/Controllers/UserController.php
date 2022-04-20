@@ -22,10 +22,10 @@ class UserController extends Controller
                 $token = $user->createToken('authToken')->plainTextToken;
                 return response()->json(['token' => $token], 200);
             }else{
-                return response()->json(['error' => 'Invalid credentials'], 401);
+                return response()->json(['message' => 'Credenciales invalidas'], 401);
             }
         }else{
-            return response()->json(['error' => 'User not found'], 404);
+            return response()->json(['message' => 'Usuario no encontrado'], 401);
         }
     }
 
@@ -43,7 +43,9 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return response()->json($user, 201);
+        $token = $user->createToken('authToken')->plainTextToken;
+
+        return response()->json(['token' => $token, 'user' => $user], 200);
     }
 
     public function userProfile(){
