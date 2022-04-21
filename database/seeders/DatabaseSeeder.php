@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\SeasonSeeder;
+use Database\Seeders\TeamSeeder;
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -19,6 +20,8 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleSeeder::class);
 
         $this->call(SeasonSeeder::class);
+
+        $this->call(TeamSeeder::class);
         
     }
 }
