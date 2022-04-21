@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
 
 Route::post('register', [UserController::class, 'register']);
 
@@ -15,5 +16,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 });
 
 Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
-    Route::get('admin/', [UserController::class, 'index']);
+    Route::controller(AdminController::class)->group(function () {
+        Route::get('seasons', [AdminController::class, 'get_seasons']);
+        Route::put('seasons/{id}', [AdminController::class, 'update_season']);
+        Route::put('seasons/{id}/register', [AdminController::class, 'update_season_register']);
+    });
 });

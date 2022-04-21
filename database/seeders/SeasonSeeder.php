@@ -18,8 +18,9 @@ class SeasonSeeder extends Seeder
             $actual_year = date('Y');
 
             Season::create([
-                'name' => 'Season ' . ($actual_year + $i),
+                'name' => 'Temporada ' . ($actual_year + $i),
                 'is_active' => $i === 0 ? 1 : 0,
+                'is_register_open' => $i === 0 ? 1 : 0,
             ]);
         }
     }
