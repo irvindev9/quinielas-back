@@ -20,5 +20,11 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::get('seasons', [AdminController::class, 'get_seasons']);
         Route::put('seasons/{id}', [AdminController::class, 'update_season']);
         Route::put('seasons/{id}/register', [AdminController::class, 'update_season_register']);
+
+        Route::get('weeks', [AdminController::class, 'get_weeks']);
+        Route::post('weeks', [AdminController::class, 'add_week']);
+        Route::delete('weeks/{id}', [AdminController::class, 'delete_week']);
+
+        Route::get('users', [AdminController::class, 'get_users']);
     });
 });
