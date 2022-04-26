@@ -24,7 +24,13 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::get('weeks', [AdminController::class, 'get_weeks']);
         Route::post('weeks', [AdminController::class, 'add_week']);
         Route::delete('weeks/{id}', [AdminController::class, 'delete_week']);
+        Route::put('weeks/{id}', [AdminController::class, 'update_week_status']);
 
         Route::get('users', [AdminController::class, 'get_users']);
+
+        Route::post('match/{id}', [AdminController::class, 'add_match']);
+        Route::get('match/{id}', [AdminController::class, 'get_match']);
+        Route::delete('match/{id}', [AdminController::class, 'delete_match']);
+        Route::put('match/{id}', [AdminController::class, 'update_match_status']);
     });
 });
