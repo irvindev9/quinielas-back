@@ -29,4 +29,11 @@ class Match extends Model
     {
         return $this->belongsTo(Team::class, 'winner_id');
     }
+
+    public function result_by_user()
+    {
+        $user_id = auth()->user()->id;
+
+        return $this->hasOne(Result::class)->where('user_id', $user_id);
+    }
 }

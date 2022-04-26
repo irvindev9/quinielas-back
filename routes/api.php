@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\QuinielaController;
+
 
 Route::post('register', [UserController::class, 'register']);
 
@@ -13,6 +15,8 @@ Route::post('login', [UserController::class, 'login']);
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('user', [UserController::class, 'userProfile']);
     Route::get('logout', [UserController::class, 'logout']);
+
+    Route::get('quiniela/{week_id}', [QuinielaController::class, 'week_of_user']);
 });
 
 Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
