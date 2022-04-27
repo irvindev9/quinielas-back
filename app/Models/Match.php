@@ -34,6 +34,8 @@ class Match extends Model
     {
         $user_id = auth()->user()->id;
 
-        return $this->hasOne(Result::class)->where('user_id', $user_id);
+        return $this->hasOne(Result::class, 'match_id')->where('user_id', $user_id);
+
+        
     }
 }

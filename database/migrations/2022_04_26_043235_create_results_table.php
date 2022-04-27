@@ -19,6 +19,10 @@ class CreateResultsTable extends Migration
             $table->bigInteger('match_id')->unsigned();
             $table->bigInteger('team_id')->unsigned();
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('match_id')->references('id')->on('matches')->onDelete('cascade');
+            $table->foreign('team_id')->references('id')->on('teams')->onDelete('cascade');
         });
     }
 
