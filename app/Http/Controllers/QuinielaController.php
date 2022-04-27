@@ -30,7 +30,7 @@ class QuinielaController extends Controller
     }
 
     public function weeks(){
-        $weeks = Week::all();
+        $weeks = Week::orderBy('end_date', 'desc')->get();
 
         return response()->json($weeks);
     }
