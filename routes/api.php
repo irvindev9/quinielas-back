@@ -16,11 +16,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('user', [UserController::class, 'userProfile']);
     Route::get('logout', [UserController::class, 'logout']);
 
-    Route::get('quiniela/{week_id}', [QuinielaController::class, 'week_of_user']);
-    Route::post('quiniela/{week_id}', [QuinielaController::class, 'save_week_of_user']);
-
-    Route::get('weeks', [QuinielaController::class, 'weeks']);
+    
+    Route::get('quiniela/{week_id}', [QuinielaController::class, 'week_of_user'])->where('week_id', '[0-9]+');
+    Route::post('quiniela/{week_id}', [QuinielaController::class, 'save_week_of_user'])->where('week_id', '[0-9]+');
+    Route::get('quiniela/weeks', [QuinielaController::class, 'weeks']);
 });
+
+
 
 Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
     Route::controller(AdminController::class)->group(function () {
