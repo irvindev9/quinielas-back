@@ -21,7 +21,7 @@ class CreateMatchesTable extends Migration
             $table->tinyInteger('winner_id')->nullable()->default(null);
             $table->timestamps();
 
-            $table->foreign('week_id')->references('id')->on('weeks');
+            $table->foreign('week_id')->references('id')->on('weeks')->onDelete('cascade');
             $table->foreign('team_id')->references('id')->on('teams');
             $table->foreign('team_id_2')->references('id')->on('teams');
         });

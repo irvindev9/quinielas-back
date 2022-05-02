@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Week;
 use App\Models\Match;
+use App\Models\Result;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -159,6 +160,12 @@ class AdminController extends Controller
             return response()->json(['message' => 'No se puede eliminar un partido que ya paso'], 401);
         }
 
+        $results = Result::where('match_id', $id)->get();
+
+        foreach($results as $result){
+            $result->delete();
+        }
+
         $match->delete();
 
         return response()->json(['message' => 'Partido eliminado'], 200);
@@ -176,5 +183,23 @@ class AdminController extends Controller
         $match->save();
 
         return response()->json($match, 200);
+    }
+
+    public function delete_participants($user_id){
+        $user = User::find($user_id);
+
+        if(!$user){
+            return response()->json(['message' => 'No se encontro el usuario'], 404);
+        }
+
+        if($user->role_id == 1){
+            return response()->json(['message' => 'No se puede eliminar un administrador'], 401);
+        }
+
+        $user->results()->delete();
+
+        $user->delete();
+
+        return response()->json(['message' => 'Usuario eliminado'], 200);
     }
 }

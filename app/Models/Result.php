@@ -14,4 +14,9 @@ class Result extends Model
         'match_id',
         'team_id',
     ];
+
+    public function winner_of_match()
+    {
+        return $this->hasOne(Match::class);
+    }
 }

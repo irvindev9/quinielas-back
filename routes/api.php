@@ -12,34 +12,37 @@ Route::post('register', [UserController::class, 'register']);
 
 Route::post('login', [UserController::class, 'login']);
 
+Route::get('quiniela/leaderBoard', [QuinielaController::class, 'leaderBoard']);
+Route::get('quiniela/matches/{week_id}', [QuinielaController::class, 'matches_of_week']);
+Route::get('quiniela/results/{week_id}', [QuinielaController::class, 'results_by_week']);
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('user', [UserController::class, 'userProfile']);
     Route::get('logout', [UserController::class, 'logout']);
-
     
     Route::get('quiniela/{week_id}', [QuinielaController::class, 'week_of_user'])->where('week_id', '[0-9]+');
     Route::post('quiniela/{week_id}', [QuinielaController::class, 'save_week_of_user'])->where('week_id', '[0-9]+');
     Route::get('quiniela/weeks', [QuinielaController::class, 'weeks']);
 });
 
-
-
 Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
     Route::controller(AdminController::class)->group(function () {
-        Route::get('seasons', [AdminController::class, 'get_seasons']);
-        Route::put('seasons/{id}', [AdminController::class, 'update_season']);
-        Route::put('seasons/{id}/register', [AdminController::class, 'update_season_register']);
+        Route::get('seasons', 'get_seasons');
+        Route::put('seasons/{id}', 'update_season');
+        Route::put('seasons/{id}/register', 'update_season_register');
 
-        Route::get('weeks', [AdminController::class, 'get_weeks']);
-        Route::post('weeks', [AdminController::class, 'add_week']);
-        Route::delete('weeks/{id}', [AdminController::class, 'delete_week']);
-        Route::put('weeks/{id}', [AdminController::class, 'update_week_status']);
+        Route::get('weeks', 'get_weeks');
+        Route::post('weeks', 'add_week');
+        Route::delete('weeks/{id}', 'delete_week');
+        Route::put('weeks/{id}', 'update_week_status');
 
-        Route::get('users', [AdminController::class, 'get_users']);
+        Route::get('users', 'get_users');
 
-        Route::post('match/{id}', [AdminController::class, 'add_match']);
-        Route::get('match/{id}', [AdminController::class, 'get_match']);
-        Route::delete('match/{id}', [AdminController::class, 'delete_match']);
-        Route::put('match/{id}', [AdminController::class, 'update_match_status']);
+        Route::post('match/{id}', 'add_match');
+        Route::get('match/{id}', 'get_match');
+        Route::delete('match/{id}', 'delete_match');
+        Route::put('match/{id}', 'update_match_status');
+
+        Route::delete('participants/{id}', 'delete_participants');
     });
 });
