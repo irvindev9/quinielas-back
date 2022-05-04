@@ -9,6 +9,8 @@ use App\Models\Week;
 use App\Models\Match;
 use App\Models\Result;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -102,7 +104,7 @@ class AdminController extends Controller
     }
 
     public function get_users(){
-        $users = User::all();
+        $users = User::with('team')->orderBy('name', 'asc')->get();
 
         return response()->json($users, 200);
     }
@@ -201,5 +203,126 @@ class AdminController extends Controller
         $user->delete();
 
         return response()->json(['message' => 'Usuario eliminado'], 200);
+    }
+
+    public function update_participants(Request $request, $user_id){
+        $user = User::find($user_id);
+
+        $params = $request->all()[0];
+
+        if(!$user){
+            return response()->json(['message' => 'No se encontro el usuario'], 404);
+        }
+
+        $user->update($params);
+
+        return response()->json($user, 200);
+    }
+
+    public function update_user_password(Request $request, $user_id){
+
+        $user = User::find($user_id);
+
+        if(!$user){
+            return response()->json(['message' => 'No se encontro el usuario'], 404);
+        }
+
+        $request->validate([
+            'password' => 'required|min:6',
+            'password_confirmation' => 'required|min:6|same:password',
+        ]);
+
+        $user->password = bcrypt($request->password);
+
+        $user->save();
+
+        return response()->json($user, 200);
+    }
+
+    public function update_user_name(Request $request, $user_id){
+
+        $user = User::find($user_id);
+
+        if(!$user){
+            return response()->json(['message' => 'No se encontro el usuario'], 404);
+        }
+
+        $request->validate([
+            'name' => 'required|min:3',
+        ]);
+
+        $user->name = $request->name;
+
+        $user->save();
+
+        return response()->json($user, 200);
+    }
+
+    public function log_as_user_for_admin($user_id){
+        $user = User::find($user_id);
+
+        if(!$user){
+            return response()->json(['message' => 'No se encontro el usuario'], 404);
+        }
+
+        if($user->role_id == 1){
+            return response()->json(['message' => 'No se puede loguear como un usuario que es administrador'], 401);
+        }
+
+        auth()->user()->tokens->each(function($token, $key){
+            $token->delete();
+        });
+
+        $token = $user->createToken('authToken')->plainTextToken;
+
+        return response()->json(['token' => $token, 'user' => $user], 200);
+    }
+
+    public function save_background_file(Request $request){
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $file = $request->file('file');
+
+        $name = time().'_'.$file->getClientOriginalName();
+
+        $background = Storage::disk('public')->put('backgrounds/'.$name, file_get_contents($file));
+
+        return response()->json($background, 200);
+    }
+
+    public function get_all_backgrounds(){
+        $files = Storage::disk('public')->files('backgrounds');
+
+        $backgrounds = [];
+
+        foreach($files as $key => $file){
+            $type = Storage::disk('public')->mimeType($file);
+            if($type == 'image/jpeg' || $type == 'image/png' || $type == 'image/jpg'){
+                $dimensions = getimagesize(Storage::disk('public')->path($file));
+                $backgrounds[$key] = [
+                    'id' => $key,
+                    'name' => $file,
+                    'url' => Storage::disk('public')->url($file),
+                    'size' => round(Storage::disk('public')->size($file) / 1024, 2),
+                    'type' => Storage::disk('public')->mimeType($file),
+                    'dimensions' => [
+                        'width' => $dimensions[0],
+                        'height' => $dimensions[1],
+                    ],
+                    'modified' => Storage::disk('public')->lastModified($file),
+                ];
+            }
+        }
+
+        return response()->json($backgrounds, 200);
+    }
+
+    public function delete_background(Request $request){
+
+        $file = Storage::disk('public')->delete($request->name);
+
+        return response()->json(['message' => $file], 200);
     }
 }

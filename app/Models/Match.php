@@ -41,4 +41,9 @@ class Match extends Model
     {
         return $this->hasMany(Result::class);
     }
+
+    public function week()
+    {
+        return $this->belongsTo(Week::class);
+    }
 }

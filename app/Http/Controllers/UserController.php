@@ -35,12 +35,14 @@ class UserController extends Controller
             'email' => 'required|unique:users',
             'password' => 'required',
             'password_confirmation' => 'required|same:password',
+            'favorite_team' => 'required'
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'team_id' => $request->favorite_team
         ]);
 
         $token = $user->createToken('authToken')->plainTextToken;

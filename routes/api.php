@@ -16,6 +16,8 @@ Route::get('quiniela/leaderBoard', [QuinielaController::class, 'leaderBoard']);
 Route::get('quiniela/matches/{week_id}', [QuinielaController::class, 'matches_of_week']);
 Route::get('quiniela/results/{week_id}', [QuinielaController::class, 'results_by_week']);
 
+Route::get('backgrounds/images', [QuinielaController::class, 'get_all_backgrounds']);
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('user', [UserController::class, 'userProfile']);
     Route::get('logout', [UserController::class, 'logout']);
@@ -37,6 +39,7 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::put('weeks/{id}', 'update_week_status');
 
         Route::get('users', 'get_users');
+        
 
         Route::post('match/{id}', 'add_match');
         Route::get('match/{id}', 'get_match');
@@ -44,5 +47,13 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::put('match/{id}', 'update_match_status');
 
         Route::delete('participants/{id}', 'delete_participants');
+        Route::put('participants/{id}', 'update_participants');
+        Route::put('participants/{id}/password', 'update_user_password');
+        Route::put('participants/{id}/name', 'update_user_name');
+        Route::get('participants/{id}/login', 'log_as_user_for_admin');
+
+        Route::get('backgrounds', 'get_all_backgrounds');
+        Route::delete('backgrounds', 'delete_background');
+        Route::post('backgrounds', 'save_background_file');
     });
 });

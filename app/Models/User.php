@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_paid',
+        'is_hide',
+        'team_id'
     ];
 
     /**
@@ -50,5 +53,10 @@ class User extends Authenticatable
     public function results()
     {
         return $this->hasMany(Result::class);
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 }

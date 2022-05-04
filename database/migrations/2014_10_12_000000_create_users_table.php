@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->bigInteger('role_id')->unsigned()->default(2);
             $table->tinyInteger('is_hide')->default(0);
             $table->tinyInteger('is_paid')->default(0);
+            $table->bigInteger('team_id')->unsigned()->default(1);
             $table->rememberToken();
             $table->timestamps();
         });
