@@ -20,7 +20,8 @@ Route::get('quiniela/weeks', [QuinielaController::class, 'weeks']);
 Route::get('backgrounds/images', [QuinielaController::class, 'get_all_backgrounds']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::get('user', [UserController::class, 'userProfile']);
+    Route::get('user', [UserController::class, 'user_profile']);
+    Route::get('user/score', [UserController::class, 'get_score']);
     Route::get('logout', [UserController::class, 'logout']);
     
     Route::get('quiniela/{week_id}', [QuinielaController::class, 'week_of_user'])->where('week_id', '[0-9]+');
@@ -39,7 +40,6 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::put('weeks/{id}', 'update_week_status');
 
         Route::get('users', 'get_users');
-        
 
         Route::post('match/{id}', 'add_match');
         Route::get('match/{id}', 'get_match');
