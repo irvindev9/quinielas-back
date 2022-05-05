@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Season;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -30,6 +31,16 @@ class UserController extends Controller
     }
 
     public function register(Request $request){
+        $season = Season::where('is_active', 1)->first();
+
+        if(!$season){
+            return response()->json(['message' => 'No hay temporada activa'], 404);
+        }
+
+        if($season->is_register_open == 0){
+            return response()->json(['message' => 'El registro esta cerrado!'], 404);
+        }
+
         $request->validate([
             'name' => 'required',
             'email' => 'required|unique:users',

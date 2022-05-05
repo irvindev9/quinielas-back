@@ -7,11 +7,12 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Week;
 use App\Models\Match;
+use App\Models\Notification;
 use App\Models\Result;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
-
 class AdminController extends Controller
 {
     public function get_seasons(){
@@ -227,6 +228,10 @@ class AdminController extends Controller
             return response()->json(['message' => 'No se encontro el usuario'], 404);
         }
 
+        if($user->role_id == 1 && $user->id != auth()->user()->id){
+            return response()->json(['message' => 'No se puede cambiar el password de otro administrador'], 401);
+        }
+
         $request->validate([
             'password' => 'required|min:6',
             'password_confirmation' => 'required|min:6|same:password',
@@ -324,5 +329,61 @@ class AdminController extends Controller
         $file = Storage::disk('public')->delete($request->name);
 
         return response()->json(['message' => $file], 200);
+    }
+
+    public function upload_user_photo(Request $request, $user_id){
+        $user = User::find($user_id);
+
+        if(!$user){
+            return response()->json(['message' => 'No se encontro el usuario'], 404);
+        }
+
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg|max:1024',
+        ]);
+
+        $file = $request->file('file');
+
+        $name = time().'_'.$file->getClientOriginalName();
+
+        $path = Storage::disk('public')->put('users/'.$name, file_get_contents($file));
+
+        $photo = Storage::disk('public')->url('users/'.$name);
+
+        $user->img = $photo;
+
+        $user->save();
+
+        return response()->json($user, 200);
+    }
+
+    public function add_notification(Request $request){
+        
+        $request->validate([
+            'message' => 'required|min:3',
+            'active_to' => 'required',
+            'position' => 'required',
+            'color' => 'required',
+        ]);
+
+        return response()->json(['message' => Notification::create($request->all())], 200);
+    }
+
+    public function get_active_notifications(){
+        $notifications = Notification::where('active_to', '>=', Carbon::now())->get();
+
+        return response()->json($notifications, 200);
+    }
+
+    public function delete_notification($notification_id){
+        $notification = Notification::find($notification_id);
+
+        if(!$notification){
+            return response()->json(['message' => 'No se encontro la notificacion'], 404);
+        }
+
+        $notification->delete();
+
+        return response()->json(['message' => 'Notificacion eliminada'], 200);
     }
 }
