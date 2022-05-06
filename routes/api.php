@@ -7,25 +7,33 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\QuinielaController;
 
+Route::controller(UserController::class)->group(function () {
+    Route::post('register', 'register');
+    Route::post('login', 'login');
+});
 
-Route::post('register', [UserController::class, 'register']);
 
-Route::post('login', [UserController::class, 'login']);
+Route::controller(QuinielaController::class)->group(function () {
+    Route::get('quiniela/leaderBoard', 'leaderBoard');
+    Route::get('quiniela/weeks', 'weeks');
+    Route::get('quiniela/matches/{week_id}', 'matches_of_week');
+    Route::get('quiniela/results/{week_id}', 'results_by_week');
 
-Route::get('quiniela/leaderBoard', [QuinielaController::class, 'leaderBoard']);
-Route::get('quiniela/matches/{week_id}', [QuinielaController::class, 'matches_of_week']);
-Route::get('quiniela/results/{week_id}', [QuinielaController::class, 'results_by_week']);
-Route::get('quiniela/weeks', [QuinielaController::class, 'weeks']);
+    Route::get('backgrounds/images', 'get_all_backgrounds');
+});
 
-Route::get('backgrounds/images', [QuinielaController::class, 'get_all_backgrounds']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::get('user', [UserController::class, 'user_profile']);
-    Route::get('user/score', [UserController::class, 'get_score']);
-    Route::get('logout', [UserController::class, 'logout']);
-    
-    Route::get('quiniela/{week_id}', [QuinielaController::class, 'week_of_user'])->where('week_id', '[0-9]+');
-    Route::post('quiniela/{week_id}', [QuinielaController::class, 'save_week_of_user'])->where('week_id', '[0-9]+');
+    Route::controller(UserController::class)->group(function () {
+        Route::get('user', 'user_profile');
+        Route::get('user/score', 'get_score');
+        Route::get('logout', 'logout');
+    });
+
+    Route::controller(QuinielaController::class)->group(function () {
+        Route::get('quiniela/{week_id}', 'week_of_user')->where('week_id', '[0-9]+');
+        Route::post('quiniela/{week_id}', 'save_week_of_user')->where('week_id', '[0-9]+');
+    });
 });
 
 Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
