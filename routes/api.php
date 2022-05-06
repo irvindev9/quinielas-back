@@ -7,11 +7,11 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\QuinielaController;
 
+// Public routes
 Route::controller(UserController::class)->group(function () {
     Route::post('register', 'register');
     Route::post('login', 'login');
 });
-
 
 Route::controller(QuinielaController::class)->group(function () {
     Route::get('quiniela/leaderBoard', 'leaderBoard');
@@ -22,7 +22,7 @@ Route::controller(QuinielaController::class)->group(function () {
     Route::get('backgrounds/images', 'get_all_backgrounds');
 });
 
-
+// Auth routes
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::controller(UserController::class)->group(function () {
         Route::get('user', 'user_profile');
@@ -36,6 +36,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     });
 });
 
+// Admin + Auth routes
 Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
     Route::controller(AdminController::class)->group(function () {
         Route::get('seasons', 'get_seasons');
