@@ -80,6 +80,7 @@ class UserController extends Controller
 
     public function get_score(){
         $user = User::with('results')->find(auth()->user()->id);
+
         $is_paid = $user->is_paid;
 
         $active_season = Season::where('is_active', 1)->first();
@@ -91,8 +92,10 @@ class UserController extends Controller
         foreach($matches as $match){
             $result = $user->results()->where('match_id', $match->id)->first();
 
-            if($match->winner_id == $result->team_id && isset($match->winner_id)){
-                $score++;
+            if(isset($match->winner_id)){
+                if($match->winner_id == $result->team_id){
+                    $score++;
+                }
             }
         }
 
