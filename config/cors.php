@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000', 'http://api-quinielas.irvin-lopez.com'],
+    'allowed_origins' => ['http://localhost:3000', 'http://quinielas.irvin-lopez.com'],
 
     'allowed_origins_patterns' => [],
 
