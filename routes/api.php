@@ -22,7 +22,7 @@ Route::controller(QuinielaController::class)->group(function () {
     Route::get('backgrounds/images', 'get_all_backgrounds');
 });
 
-Route::controller(UserController::class)->group(function () {
+Route::controller(AdminController::class)->group(function () {
     Route::get('notifications', 'get_active_notifications');
 });
 
