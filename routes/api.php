@@ -20,6 +20,8 @@ Route::controller(QuinielaController::class)->group(function () {
     Route::get('quiniela/results/{week_id}', 'results_by_week');
 
     Route::get('backgrounds/images', 'get_all_backgrounds');
+
+    Route::get('notifications', 'get_active_notifications');
 });
 
 // Auth routes
@@ -67,7 +69,6 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('backgrounds', 'save_background_file');
 
         Route::post('notifications', 'add_notification');
-        Route::get('notifications', 'get_active_notifications');
         Route::delete('notifications/{id}', 'delete_notification');
     });
 });
