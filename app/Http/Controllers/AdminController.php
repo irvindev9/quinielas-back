@@ -79,7 +79,7 @@ class AdminController extends Controller
         $week = Week::find($id);
         Redis::del('leaderboard');
         foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del($key);
+            Redis::del(str_replace('laravel_database_', '', $key));
         }
 
         if(!$week){
@@ -161,7 +161,7 @@ class AdminController extends Controller
         $week = Week::where('id', $match->week_id)->first();
         Redis::del('leaderboard');
         foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del($key);
+            Redis::del(str_replace('laravel_database_', '', $key));
         }
 
         if(!$match){
@@ -187,7 +187,7 @@ class AdminController extends Controller
         $match = Play::find($id);
         Redis::del('leaderboard');
         foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del($key);
+            Redis::del(str_replace('laravel_database_', '', $key));
         }
 
         if(!$match){
@@ -205,7 +205,7 @@ class AdminController extends Controller
         $user = User::find($user_id);
         Redis::del('leaderboard');
         foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del($key);
+            Redis::del(str_replace('laravel_database_', '', $key));
         }
 
         if(!$user){
@@ -227,7 +227,7 @@ class AdminController extends Controller
         $user = User::find($user_id);
         Redis::del('leaderboard');
         foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del($key);
+            Redis::del(str_replace('laravel_database_', '', $key));
         }
 
         $params = $request->all()[0];
