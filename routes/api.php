@@ -20,7 +20,9 @@ Route::controller(QuinielaController::class)->group(function () {
     Route::get('quiniela/results/{week_id}', 'results_by_week');
 
     Route::get('backgrounds/images', 'get_all_backgrounds');
+});
 
+Route::controller(UserController::class)->group(function () {
     Route::get('notifications', 'get_active_notifications');
 });
 
