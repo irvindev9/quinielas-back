@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Match extends Model
+class Play extends Model
 {
     use HasFactory;
+
+    public $table = 'matches';
 
     protected $fillable = [
         'team_id',

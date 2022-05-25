@@ -23,6 +23,6 @@ class Week extends Model
 
     public function matches()
     {
-        return $this->hasMany(Match::class);
+        return $this->hasMany(Play::class);
     }
 }

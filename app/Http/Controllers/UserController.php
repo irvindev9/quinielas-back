@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Season;
 use App\Models\User;
 use App\Models\Week;
-use App\Models\Match;
+use App\Models\Play;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -85,7 +85,7 @@ class UserController extends Controller
 
         $active_season = Season::where('is_active', 1)->first();
         $weeks_id = Week::where('season_id', $active_season->id)->pluck('id')->toArray();
-        $matches = Match::whereIn('week_id', $weeks_id)->get();
+        $matches = Play::whereIn('week_id', $weeks_id)->get();
 
         $score = 0;
 

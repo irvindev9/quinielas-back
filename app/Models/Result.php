@@ -17,6 +17,6 @@ class Result extends Model
 
     public function winner_of_match()
     {
-        return $this->hasOne(Match::class);
+        return $this->hasOne(Play::class);
     }
 }

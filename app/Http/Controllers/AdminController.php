@@ -6,13 +6,14 @@ use App\Models\Season;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Week;
-use App\Models\Match;
+use App\Models\Play;
 use App\Models\Notification;
 use App\Models\Result;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+
 class AdminController extends Controller
 {
     public function get_seasons(){
@@ -76,6 +77,10 @@ class AdminController extends Controller
 
     public function delete_week($id){
         $week = Week::find($id);
+        Redis::del('leaderboard');
+        foreach(Redis::keys('results_by_week*') as $key){
+            Redis::del($key);
+        }
 
         if(!$week){
             return response()->json(['message' => 'No se encontro la semana'], 401);
@@ -85,7 +90,7 @@ class AdminController extends Controller
             return response()->json(['message' => 'No se puede eliminar una semana que ya paso'], 401);
         }
 
-        Match::where('week_id', $week->id)->delete();
+        Play::where('week_id', $week->id)->delete();
 
         $week->delete();
 
@@ -123,7 +128,7 @@ class AdminController extends Controller
             $week = Week::where('id', $id)->first();
 
             if(isset($week)){
-                $match = Match::create([
+                $match = Play::create([
                     'team_id' => $request->team_id,
                     'team_id_2' => $request->team_id_2,
                     'week_id' => $id,
@@ -142,7 +147,7 @@ class AdminController extends Controller
         $week = Week::where('id', $id)->first();
 
         if(isset($week)){
-            $matches = Match::where('week_id', $id)->with('team_1', 'team_2')->get();
+            $matches = Play::where('week_id', $id)->with('team_1', 'team_2')->get();
 
             return response()->json($matches, 200);
         }else{
@@ -151,9 +156,13 @@ class AdminController extends Controller
     }
 
     public function delete_match($id){
-        $match = Match::find($id);
+        $match = Play::find($id);
 
         $week = Week::where('id', $match->week_id)->first();
+        Redis::del('leaderboard');
+        foreach(Redis::keys('results_by_week*') as $key){
+            Redis::del($key);
+        }
 
         if(!$match){
             return response()->json(['message' => 'No se encontro el partido'], 404);
@@ -175,7 +184,11 @@ class AdminController extends Controller
     }
 
     public function update_match_status(Request $request, $id){
-        $match = Match::find($id);
+        $match = Play::find($id);
+        Redis::del('leaderboard');
+        foreach(Redis::keys('results_by_week*') as $key){
+            Redis::del($key);
+        }
 
         if(!$match){
             return response()->json(['message' => 'No se encontro el partido'], 404);
@@ -190,6 +203,10 @@ class AdminController extends Controller
 
     public function delete_participants($user_id){
         $user = User::find($user_id);
+        Redis::del('leaderboard');
+        foreach(Redis::keys('results_by_week*') as $key){
+            Redis::del($key);
+        }
 
         if(!$user){
             return response()->json(['message' => 'No se encontro el usuario'], 404);
@@ -208,6 +225,10 @@ class AdminController extends Controller
 
     public function update_participants(Request $request, $user_id){
         $user = User::find($user_id);
+        Redis::del('leaderboard');
+        foreach(Redis::keys('results_by_week*') as $key){
+            Redis::del($key);
+        }
 
         $params = $request->all()[0];
 
@@ -247,6 +268,7 @@ class AdminController extends Controller
     public function update_user_name(Request $request, $user_id){
 
         $user = User::find($user_id);
+        Redis::del('leaderboard');
 
         if(!$user){
             return response()->json(['message' => 'No se encontro el usuario'], 404);

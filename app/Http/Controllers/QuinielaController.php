@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Result;
 use App\Models\User;
 use App\Models\Week;
-use App\Models\Match;
+use App\Models\Play;
 use App\Models\Season;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
-
 class QuinielaController extends Controller
 {
     public function week_of_user($week_id){
@@ -39,11 +39,16 @@ class QuinielaController extends Controller
     }
 
     public function leaderBoard(){
+
+        if ($leaderboard = Redis::get('leaderboard')) {
+            return response()->json(json_decode($leaderboard));
+        }
+
         $Users = User::with('results')->where('is_hide', 0)->get();
 
         $active_season = Season::where('is_active', 1)->first();
         $weeks_id = Week::where('season_id', $active_season->id)->pluck('id')->toArray();
-        $matches = Match::whereIn('week_id', $weeks_id)->get();
+        $matches = Play::whereIn('week_id', $weeks_id)->get();
 
         $leaderBoard = [];
 
@@ -78,11 +83,17 @@ class QuinielaController extends Controller
             }
         }
 
+        Redis::set('leaderBoard', json_encode($leaderBoard));
+
         return response()->json($leaderBoard);
     }
 
     public function results_by_week($week_id){
-        $matchs = Match::where('week_id', $week_id)->get();
+        if ($results = Redis::get('results_by_week.'.$week_id)) {
+            return response()->json(json_decode($results));
+        }
+
+        $matchs = Play::where('week_id', $week_id)->get();
 
         $results = User::with(['results' => function($query) use ($matchs){
             $query->whereIn('match_id', $matchs->pluck('id'));
@@ -97,11 +108,13 @@ class QuinielaController extends Controller
             }
         }
 
+        Redis::set('results_by_week.'.$week_id, json_encode($results));
+
         return response()->json($results);
     }
 
     public function matches_of_week($week_id){
-        $matchs = Match::with(['team_1', 'team_2'])->where('week_id', $week_id)->get();
+        $matchs = Play::with(['team_1', 'team_2'])->where('week_id', $week_id)->get();
 
         return response()->json($matchs);
     }
