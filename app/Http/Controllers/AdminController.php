@@ -408,4 +408,48 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'Notificacion eliminada'], 200);
     }
+
+    public function get_espn_games($week = 1, $year = 2022){
+        $command = escapeshellcmd(env('PYTHON_VERSION', 'python3').' commands/quiniela-scraper/espn_nfl.py '.$week.' '.$year);
+        $output = exec($command);
+
+        $output = str_replace('[', '', $output);
+        $output = str_replace(']', '', $output);
+        $output = explode(',', $output);
+        $i = 0;
+        $index = 0;
+
+        $games = [];
+
+        $teams = Team::all();
+
+        foreach($output as $key => $game){
+            if (($i % 2) == 0) {
+                $games[$index][0] = $teams->filter(function($value, $key) use ($game){
+                    return stripos($value, str_replace("}", '', str_replace("'", '', explode(': ', $game)[1]))) !== false;
+                })->first();
+            } else {
+                $games[$index][1] = Team::where('name', 'like', '%'.str_replace("}", '', str_replace("'", '', explode(': ', $game)[1])).'%')->first();
+                $index++;
+            }
+            $i++;
+        }
+
+        if(count($games) == 0){
+            return response()->json(['message' => 'No se encontraron partidos'], 404);
+        }
+
+        $season = Season::where('name', 'Temporada '.$year)->first();
+        $week = Week::where('name', 'Semana '.$week)->where('season_id', $season->id)->first();
+
+        foreach($games as $key => $game){
+            Play::create([
+                'team_id' => $game[0]->id,
+                'team_id_2' => $game[1]->id,
+                'week_id' => $week->id,
+            ]);
+        }
+
+        return response()->json($games, 200);
+    }
 }

@@ -24,6 +24,7 @@ Route::controller(QuinielaController::class)->group(function () {
 
 Route::controller(AdminController::class)->group(function () {
     Route::get('notifications', 'get_active_notifications');
+    Route::get('get_espn_games/{week}/{year}', 'get_espn_games')->where('week', '[0-9]+')->where('year', '[0-9]+');
 });
 
 // Auth routes
