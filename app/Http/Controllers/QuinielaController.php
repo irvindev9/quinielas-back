@@ -57,6 +57,7 @@ class QuinielaController extends Controller
             $leaderBoard[$user->id]['user_id'] = $user->id;
             $leaderBoard[$user->id]['name'] = $user->name;
             $leaderBoard[$user->id]['img'] = $user->img;
+            $leaderBoard[$user->id]['team_id'] = $user->team_id;
             foreach($user->results as $result){
                 $match = $matches->where('id', $result->match_id)->first();
                 // Si hay un ganador y el usuario gano se suma 1 punto
