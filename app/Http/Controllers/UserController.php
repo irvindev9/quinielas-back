@@ -8,6 +8,7 @@ use App\Models\Week;
 use App\Models\Play;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\AdminController;
 
 
 
@@ -60,6 +61,8 @@ class UserController extends Controller
         ]);
 
         $token = $user->createToken('authToken')->plainTextToken;
+
+        AdminController::refreshResults();
 
         return response()->json(['token' => $token, 'user' => $user], 200);
     }
