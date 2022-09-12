@@ -35,6 +35,10 @@ class UserController extends Controller
     }
 
     public function register(Request $request){
+        if(!$this->is_register_open()){
+            return response()->json(['message' => 'El registro esta cerrado'], 401);
+        }
+
         $season = Season::where('is_active', 1)->first();
 
         if(!$season){
@@ -103,5 +107,15 @@ class UserController extends Controller
         }
 
         return response()->json(['score' => $score, 'is_paid' => $is_paid]);
+    }
+
+    public function is_register_open(){
+        $season = Season::where('is_active', 1)->first()->is_register_open;
+
+        if($season === 0){
+            return false;
+        }
+
+        return true;
     }
 }
