@@ -453,10 +453,12 @@ class AdminController extends Controller
         return response()->json($games, 200);
     }
 
-    public static function refreshResults(){
+    public static function refresh_results(){
         Redis::del('leaderboard');
         foreach(Redis::keys('results_by_week*') as $key){
             Redis::del(str_replace('laravel_database_', '', $key));
         }
+
+        return response()->json(['message' => 'Resultados actualizados'], 200);
     }
 }

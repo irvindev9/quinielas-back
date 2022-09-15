@@ -73,5 +73,7 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
 
         Route::post('notifications', 'add_notification');
         Route::delete('notifications/{id}', 'delete_notification');
+
+        Route::get('quiniela/refresh', 'refresh_results');
     });
 });

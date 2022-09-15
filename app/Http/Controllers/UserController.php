@@ -66,7 +66,7 @@ class UserController extends Controller
 
         $token = $user->createToken('authToken')->plainTextToken;
 
-        AdminController::refreshResults();
+        AdminController::refresh_results();
 
         return response()->json(['token' => $token, 'user' => $user], 200);
     }
