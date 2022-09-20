@@ -10,6 +10,7 @@ use App\Models\Season;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\AdminController;
 class QuinielaController extends Controller
 {
     public function week_of_user($week_id){
@@ -27,6 +28,8 @@ class QuinielaController extends Controller
                 ['team_id' => $quiniela['result_by_user']['team_id']]
             );
         }
+
+        AdminController::refresh_results();
 
         return response()->json(['success' => true]);
     }
