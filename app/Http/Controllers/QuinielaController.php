@@ -87,7 +87,7 @@ class QuinielaController extends Controller
             }
         }
 
-        Redis::set('leaderBoard', json_encode($leaderBoard));
+        Redis::set('leaderboard', json_encode($leaderBoard));
 
         return response()->json($leaderBoard);
     }
