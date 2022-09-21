@@ -77,10 +77,7 @@ class AdminController extends Controller
 
     public function delete_week($id){
         $week = Week::find($id);
-        Redis::del('leaderboard');
-        foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del(str_replace('laravel_database_', '', $key));
-        }
+        $this->refresh_results();
 
         if(!$week){
             return response()->json(['message' => 'No se encontro la semana'], 401);
@@ -159,10 +156,7 @@ class AdminController extends Controller
         $match = Play::find($id);
 
         $week = Week::where('id', $match->week_id)->first();
-        Redis::del('leaderboard');
-        foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del(str_replace('laravel_database_', '', $key));
-        }
+        $this->refresh_results();
 
         if(!$match){
             return response()->json(['message' => 'No se encontro el partido'], 404);
@@ -185,10 +179,7 @@ class AdminController extends Controller
 
     public function update_match_status(Request $request, $id){
         $match = Play::find($id);
-        Redis::del('leaderboard');
-        foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del(str_replace('laravel_database_', '', $key));
-        }
+        $this->refresh_results();
 
         if(!$match){
             return response()->json(['message' => 'No se encontro el partido'], 404);
@@ -203,10 +194,7 @@ class AdminController extends Controller
 
     public function delete_participants($user_id){
         $user = User::find($user_id);
-        Redis::del('leaderboard');
-        foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del(str_replace('laravel_database_', '', $key));
-        }
+        $this->refresh_results();
 
         if(!$user){
             return response()->json(['message' => 'No se encontro el usuario'], 404);
@@ -225,10 +213,7 @@ class AdminController extends Controller
 
     public function update_participants(Request $request, $user_id){
         $user = User::find($user_id);
-        Redis::del('leaderboard');
-        foreach(Redis::keys('results_by_week*') as $key){
-            Redis::del(str_replace('laravel_database_', '', $key));
-        }
+        $this->refresh_results();
 
         $params = $request->all()[0];
 
