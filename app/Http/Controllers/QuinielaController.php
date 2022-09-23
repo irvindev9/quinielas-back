@@ -118,7 +118,13 @@ class QuinielaController extends Controller
     }
 
     public function matches_of_week($week_id){
+        if($matchs = Redis::get('matches_of_week.'.$week_id)){
+            return response()->json(json_decode($matchs));
+        }
+
         $matchs = Play::with(['team_1', 'team_2'])->where('week_id', $week_id)->get();
+
+        Redis::set('matches_of_week.'.$week_id, json_encode($matchs));
 
         return response()->json($matchs);
     }

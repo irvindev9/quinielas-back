@@ -450,6 +450,10 @@ class AdminController extends Controller
             Redis::del(str_replace('laravel_database_', '', $key));
         }
 
+        foreach(Redis::keys('matches_of_week*') as $key){
+            Redis::del(str_replace('laravel_database_', '', $key));
+        }
+
         return response()->json(['message' => 'Resultados actualizados'], 200);
     }
 
