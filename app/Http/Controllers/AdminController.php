@@ -94,14 +94,19 @@ class AdminController extends Controller
         return response()->json(['message' => 'Semana eliminada'], 200);
     }
 
-    public function update_week_status($id){
+    public function update_week_status(Request $request, $id){
+        $request->validate([
+            'is_forced_open' => 'required|int',
+            'is_forced_open_quiniela' => 'required|int',
+        ]);
+
         $week = Week::find($id);
 
         if(!$week){
             return response()->json(['message' => 'No se encontro la semana'], 404);
         }
 
-        Week::where('id', $id)->update(['is_forced_open' => ($week->is_forced_open == 1) ? 0 : 1]);
+        Week::where('id', $id)->update(['is_forced_open' => $request->is_forced_open, 'is_forced_open_quiniela' => $request->is_forced_open_quiniela]);
 
         return response()->json($week, 200);
     }

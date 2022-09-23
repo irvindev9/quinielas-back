@@ -14,6 +14,7 @@ class Week extends Model
         'name',
         'end_date',
         'is_open_forced',
+        'is_forced_open_quiniela'
     ];
 
     public function season()
