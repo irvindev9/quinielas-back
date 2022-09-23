@@ -75,5 +75,6 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::delete('notifications/{id}', 'delete_notification');
 
         Route::get('clear_cache', 'refresh_results');
+        Route::post('check_password', 'check_password');
     });
 });

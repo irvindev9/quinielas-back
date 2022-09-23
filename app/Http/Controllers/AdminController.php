@@ -11,6 +11,7 @@ use App\Models\Notification;
 use App\Models\Result;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 
@@ -450,5 +451,23 @@ class AdminController extends Controller
         }
 
         return response()->json(['message' => 'Resultados actualizados'], 200);
+    }
+
+    public function check_password(Request $request){
+        $request->validate([
+            'password' => 'required',
+        ]);
+
+        $user = User::find(auth()->user()->id);
+
+        if(!$user){
+            return response()->json(['message' => 'No se encontro el usuario'], 404);
+        }
+
+        if(Hash::check($request->password, $user->password)){
+            return response()->json(['message' => 'Contraseña correcta'], 200);
+        }
+
+        return response()->json(['message' => 'Contraseña incorrecta'], 400);
     }
 }
