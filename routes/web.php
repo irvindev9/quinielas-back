@@ -18,3 +18,7 @@ Route::get('/', function () {
     // return view('welcome');
     return Redis::incr('visits');
 });
+
+Route::get('/debug-sentry', function () {
+    throw new Exception('testing sentry error!');
+});
