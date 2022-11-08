@@ -52,6 +52,7 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('weeks', 'add_week');
         Route::delete('weeks/{id}', 'delete_week');
         Route::put('weeks/{id}', 'update_week_status');
+        Route::put('weeks/{id}/date', 'update_week_date');
 
         Route::get('users', 'get_users');
 

@@ -112,6 +112,25 @@ class AdminController extends Controller
         return response()->json($week, 200);
     }
 
+    public function update_week_date(Request $request, $id){
+        $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        $week = Week::find($id);
+
+        if(!$week){
+            return response()->json(['message' => 'No se encontro la semana'], 404);
+        }
+
+        // datetime javascript to php
+        $end_date = date('Y-m-d H:i:s', strtotime($request->date));
+
+        Week::where('id', $id)->update(['end_date' => $end_date]);
+
+        return response()->json($week, 200);
+    }
+
     public function get_users(){
         $users = User::with('team')->orderBy('name', 'asc')->get();
 
