@@ -43,6 +43,9 @@ class QuinielaController extends Controller
 
     public function leaderBoard(){
 
+        // unlimited timeout 
+        ini_set('max_execution_time', 0);
+
         if ($leaderboard = Redis::get('leaderboard')) {
             return response()->json(json_decode($leaderboard));
         }
