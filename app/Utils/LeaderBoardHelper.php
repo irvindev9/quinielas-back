@@ -112,9 +112,20 @@ class LeaderBoardHelper
 
         $current_week = Week::where('season_id', $current_season->id)->orderBy('end_date', 'desc')->first();
 
-        $last_week = Week::where('season_id', $current_season->id)->where('end_date', '<', $current_week->end_date)->orderBy('end_date', 'desc')->first();
+        $last_weeks = Week::where('season_id', $current_season->id)->where('end_date', '<', $current_week->end_date)->orderBy('end_date', 'desc')->get();
 
-        $last_leaderboard = Leaderboard::where('season_id', $current_season->id)->where('week_id', $last_week->id)->first();
+        $week_selected = $last_weeks->pop();
+        $matches = Play::where('week_id', $current_week->id)->get();
+
+        if($matches->isEmpty()){
+            $week_selected = $last_weeks->pop();
+        }
+
+        if(!$week_selected){
+            return $leaderBoard;
+        }
+        
+        $last_leaderboard = Leaderboard::where('season_id', $current_season->id)->where('week_id', $week_selected->id)->first();
 
         if (!$last_leaderboard) {
             return $leaderBoard;
