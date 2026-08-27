@@ -34,6 +34,9 @@ class LeaderBoardHelper
         $Users = User::with('results')->where('is_hide', 0)->get();
 
         $active_season = Season::where('is_active', 1)->first();
+        if (!$active_season) {
+            return [];
+        }
         $weeks_id = Week::where('season_id', $active_season->id);
         if ($end_date) {
             $weeks_id = $weeks_id->where('end_date', '<=', $end_date);
@@ -52,7 +55,7 @@ class LeaderBoardHelper
             foreach($user->results as $result){
                 $match = $matches->where('id', $result->match_id)->first();
                 // Si hay un ganador y el usuario gano se suma 1 punto
-                if(isset($match->winner_id)){
+                if($match && isset($match->winner_id)){
                     $leaderBoard[$user->id]['points'] += ($result->team_id == $match->winner_id) ? 1 : 0;
                 }
             }
@@ -87,14 +90,22 @@ class LeaderBoardHelper
     private static function saveLeaderBoard($leaderBoard, $end_date = null){
         $current_season = Season::where('is_active', 1)->first();
 
+        if (!$current_season) {
+            return;
+        }
+
         if ($end_date) {
             $active_weeks = Week::where('season_id', $current_season->id)->where('end_date', '<=', $end_date)->pluck('id')->toArray();
         } else {
             $today = Carbon::now();
 
-            $active_weeks = Week::where('season_id', $current_season->id)->where('end_date', '<=', $today)->orderBy('end_date', 'desc')->first()->id;
+            $last_week = Week::where('season_id', $current_season->id)->where('end_date', '<=', $today)->orderBy('end_date', 'desc')->first();
 
-            $active_weeks = [$active_weeks];
+            if (!$last_week) {
+                return;
+            }
+
+            $active_weeks = [$last_week->id];
         }
 
         foreach($active_weeks as $week_id){
@@ -110,7 +121,15 @@ class LeaderBoardHelper
     private static function addLastPosition($leaderBoard){
         $current_season = Season::where('is_active', 1)->first();
 
+        if (!$current_season) {
+            return $leaderBoard;
+        }
+
         $current_week = Week::where('season_id', $current_season->id)->orderBy('end_date', 'desc')->first();
+
+        if (!$current_week) {
+            return $leaderBoard;
+        }
 
         $last_weeks = Week::where('season_id', $current_season->id)->where('end_date', '<', $current_week->end_date)->orderBy('end_date', 'desc')->get();
 
@@ -131,17 +150,31 @@ class LeaderBoardHelper
             return $leaderBoard;
         }
 
-        $last_leaderboard = (json_decode($last_leaderboard->leaderboard));
+        $last_leaderboard_data = json_decode($last_leaderboard->leaderboard);
 
-        $last_leaderboard = array_map(function($user){
+        if (!$last_leaderboard_data || !is_array($last_leaderboard_data)) {
+            return $leaderBoard;
+        }
+
+        $last_leaderboard_data = array_map(function($user){
             return (object) $user;
-        }, $last_leaderboard);
+        }, $last_leaderboard_data);
 
         foreach($leaderBoard as &$user){
             $user['diff_from_last_week'] = 0;
-            $user_from_last_leaderboard = collect($last_leaderboard)->firstWhere('user_id', $user['user_id']);
-            $diff = $user_from_last_leaderboard->position - $user['position'];
-            $user['diff_from_last_week'] = $diff;
+            $user_id = is_array($user) ? ($user['user_id'] ?? null) : ($user->user_id ?? null);
+            if ($user_id !== null) {
+                $user_from_last_leaderboard = collect($last_leaderboard_data)->firstWhere('user_id', $user_id);
+                if ($user_from_last_leaderboard && isset($user_from_last_leaderboard->position)) {
+                    $current_position = is_array($user) ? ($user['position'] ?? 0) : ($user->position ?? 0);
+                    $diff = $user_from_last_leaderboard->position - $current_position;
+                    if (is_array($user)) {
+                        $user['diff_from_last_week'] = $diff;
+                    } else {
+                        $user->diff_from_last_week = $diff;
+                    }
+                }
+            }
         }
 
         return $leaderBoard;
