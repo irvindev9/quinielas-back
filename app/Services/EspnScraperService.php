@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 class EspnScraperService
 {
     /**
-     * Fetch NFL games from ESPN API, ESPN HTML calendar, or Python fallback for a given week and year.
+     * Fetch NFL games from ESPN API, HTML calendar, or Python fallback for a given week and year.
      *
      * @param int $week
      * @param int $year
@@ -20,26 +20,33 @@ class EspnScraperService
         $games = [];
         $teams = Team::all();
 
-        // 1. Primary: Direct fetch from ESPN API
+        $ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
+
+        // 1. Primary: ESPN CDN Scoreboard API (Returns exact games for specified week and year)
         try {
-            $apiUrl = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates={$year}&seasontype=2&week={$week}";
+            $cdnUrl = "https://cdn.espn.com/core/nfl/scoreboard?xhr=1&render=false&userab=1&year={$year}&week={$week}&seasontype=2";
             $response = Http::timeout(10)->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'User-Agent' => $ua,
                 'Accept' => 'application/json, text/plain, */*',
-            ])->get($apiUrl);
+            ])->get($cdnUrl);
 
             if ($response->successful()) {
                 $data = $response->json();
-                $events = $data['events'] ?? [];
+                $events = $data['content']['sbData']['events'] ?? $data['events'] ?? [];
                 foreach ($events as $event) {
+                    // Verify week if available
+                    if (isset($event['week']['number']) && (int)$event['week']['number'] !== (int)$week) {
+                        continue;
+                    }
+
                     $competitions = $event['competitions'][0]['competitors'] ?? [];
                     $team1_name = null;
                     $team2_name = null;
                     foreach ($competitors as $competitor) {
                         if (($competitor['homeAway'] ?? '') === 'away') {
-                            $team1_name = $competitor['team']['displayName'] ?? null;
+                            $team1_name = $competitor['team']['displayName'] ?? $competitor['team']['name'] ?? null;
                         } elseif (($competitor['homeAway'] ?? '') === 'home') {
-                            $team2_name = $competitor['team']['displayName'] ?? null;
+                            $team2_name = $competitor['team']['displayName'] ?? $competitor['team']['name'] ?? null;
                         }
                     }
 
@@ -54,15 +61,60 @@ class EspnScraperService
                 }
             }
         } catch (\Exception $e) {
-            Log::error('Error fetching ESPN games via API: ' . $e->getMessage());
+            Log::error('Error fetching ESPN CDN API: ' . $e->getMessage());
         }
 
-        // 2. Secondary: Scraping ESPN Mexico HTML calendar page
+        // 2. Secondary: ESPN Web Header API (Filtered by week)
         if (count($games) === 0) {
-            $games = $this->fetchFromHtmlCalendar($week, $year, $teams);
+            try {
+                $webUrl = "https://site.web.api.espn.com/apis/v2/scoreboard/header?sport=football&league=nfl&region=mx&lang=es&contentorigin=espn&dates={$year}&seasontype=2&week={$week}";
+                $response = Http::timeout(10)->withHeaders([
+                    'User-Agent' => $ua,
+                    'Accept' => 'application/json, text/plain, */*',
+                ])->get($webUrl);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $sports = $data['sports'] ?? [];
+                    $leagues = $sports[0]['leagues'] ?? [];
+                    $events = $leagues[0]['events'] ?? [];
+                    foreach ($events as $event) {
+                        if (isset($event['week']) && (int)$event['week'] !== (int)$week) {
+                            continue;
+                        }
+
+                        $competitors = $event['competitors'] ?? [];
+                        $team1_name = null;
+                        $team2_name = null;
+                        foreach ($competitors as $competitor) {
+                            if (($competitor['homeAway'] ?? '') === 'away') {
+                                $team1_name = $competitor['displayName'] ?? $competitor['name'] ?? null;
+                            } elseif (($competitor['homeAway'] ?? '') === 'home') {
+                                $team2_name = $competitor['displayName'] ?? $competitor['name'] ?? null;
+                            }
+                        }
+
+                        if ($team1_name && $team2_name) {
+                            $t1 = $this->matchTeam($teams, $team1_name);
+                            $t2 = $this->matchTeam($teams, $team2_name);
+
+                            if ($t1 && $t2) {
+                                $games[] = [$t1, $t2];
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Error fetching ESPN Web Header API: ' . $e->getMessage());
+            }
         }
 
-        // 3. Fallback: Python script execution
+        // 3. Tertiary: Scraping ESPN Mexico HTML calendar page
+        if (count($games) === 0) {
+            $games = $this->fetchFromHtmlCalendar($week, $year, $teams, $ua);
+        }
+
+        // 4. Quaternary: Python script execution fallback
         if (count($games) === 0) {
             $games = $this->fetchFromPythonScript($week, $year, $teams);
         }
@@ -76,16 +128,18 @@ class EspnScraperService
      * @param int $week
      * @param int $year
      * @param \Illuminate\Database\Eloquent\Collection $teams
+     * @param string $ua
      * @return array
      */
-    private function fetchFromHtmlCalendar($week, $year, $teams)
+    private function fetchFromHtmlCalendar($week, $year, $teams, $ua)
     {
         $games = [];
         try {
             $pageUrl = "https://www.espn.com.mx/futbol-americano/nfl/calendario/_/semana/{$week}/ano/{$year}/tipodetemporada/2";
             $response = Http::timeout(10)->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'User-Agent' => $ua,
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language' => 'es-MX,es;q=0.9,en-US;q=0.8,en;q=0.7',
             ])->get($pageUrl);
 
             if ($response->successful()) {
