@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000', 'http://quinielas.irvin-lopez.com'],
+    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173,http://quinielas.irvin-lopez.com,https://quinielas.irvin-lopez.com,https://www.quinielaluislopez.com,https://quinielaluislopez.com')),
 
     'allowed_origins_patterns' => [],
 
