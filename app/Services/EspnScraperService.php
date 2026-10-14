@@ -39,7 +39,7 @@ class EspnScraperService
                         continue;
                     }
 
-                    $competitions = $event['competitions'][0]['competitors'] ?? [];
+                    $competitors = $event['competitions'][0]['competitors'] ?? [];
                     $team1_name = null;
                     $team2_name = null;
                     foreach ($competitors as $competitor) {
@@ -60,7 +60,7 @@ class EspnScraperService
                     }
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error fetching ESPN CDN API: ' . $e->getMessage());
         }
 
@@ -104,7 +104,7 @@ class EspnScraperService
                         }
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('Error fetching ESPN Web Header API: ' . $e->getMessage());
             }
         }
@@ -197,7 +197,7 @@ class EspnScraperService
                     }
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error fetching ESPN HTML calendar: ' . $e->getMessage());
         }
 
